@@ -40,20 +40,22 @@ public class SQLConn {
         this.createdTime = createdTime;
     }
 
-    String connectionUrl = "jdbc:mysql://localhost:3306/movieDB"; //default schema connection
-                                                                  //set for connectionUrl
-    Connection conn = DriverManager.getConnection(connectionUrl,"root","movieDB101");
-
+    String connectionUrl = "jdbc:mysql://localhost:3306/movieDB";
+    Connection conn = DriverManager.getConnection(connectionUrl,"juser","movieUserPW123");
+    
     public boolean testConn(String user){
         boolean testOK = false;
         try {
             String usr = "TESTUSER";
-            String testID = "SELECT UserID FROM movieDB.users WHERE username = '?'";
-            //testConn should expect output of "3" for test call
+            String testID = "SELECT UserID FROM users WHERE username = ?";
+            //testConn should expect "3" for test call
             PreparedStatement ps = conn.prepareStatement(testID);
             ps.setString(1, usr);
             ResultSet rs = ps.executeQuery();
+            rs.next();
             int result = rs.getInt("UserID");
+            rs.close();
+            ps.close();
             if (result == 3){
                 testOK = true;
             }
@@ -68,14 +70,15 @@ public class SQLConn {
         try {
             String sqlSelectUsers = "SELECT * FROM movieDB.users WHERE username = '"+username+"'";
             PreparedStatement ps = conn.prepareStatement(sqlSelectUsers);
-            ResultSet rs = ps.executeQuery();
-            {
+            ResultSet rs = ps.executeQuery();{
                 while (rs.next()) {
                     id = rs.getInt("user_ID");
                     userName = rs.getString("username");
                     password = rs.getString("pword");
                     createdTime = rs.getString("created");
                 }
+                rs.close();
+                ps.close();
             }
         } catch (Exception e){
             System.out.println("Connection exception occurred: "+ e);
@@ -90,7 +93,7 @@ public class SQLConn {
     public boolean createUser(String username, String pword) {
         boolean ok = false;
         try {
-            String insertUser = "INSERT INTO expendTracker.users (username,pword) " +
+            String insertUser = "INSERT INTO movieDB.users (username,pword) " +
                     "VALUES (?,?)";
             PreparedStatement ps = conn.prepareStatement(insertUser);
             //setString index refers to location of parametrised values in insert query
@@ -101,6 +104,7 @@ public class SQLConn {
             if(ps.getUpdateCount() > 0){
                 ok = true;
             }
+            ps.close();
         } catch (Exception e) {
             System.out.println("Insert error - exception: "+e);
         }
@@ -108,4 +112,5 @@ public class SQLConn {
     }
     public SQLConn() throws SQLException {
     }
+
 }
