@@ -1,0 +1,127 @@
+package com.company;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import static java.lang.String.valueOf;
+
+public class ConnMDB {
+
+    public static boolean testConn() throws SQLException {
+        boolean connected = false;
+        String respC = null;
+        try {
+            URL url = new URL("https://api.themoviedb.org/3/configuration?api_key=7d36ba51a1f8556d39d8af08af87b75d");
+            HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+            urlc.setDoOutput(true);
+            urlc.setAllowUserInteraction(false);
+            //NOT CONNECTING TO API -- won't return response code if initial connection doesn't take place
+            urlc.connect();
+            respC = valueOf(urlc.getResponseCode());
+            if (respC.equals("200")) {
+                System.out.println("Connected to API");
+                connected = true;
+            }
+            urlc.disconnect();
+        } catch (Exception e) {
+            SQLConn errCon = new SQLConn();
+            System.out.println(respC);
+            errCon.errLog("user",e.toString(),respC); //error logging - "user" placeholder for actual user to be passed
+        }
+        return connected;
+    }
+
+    public void parseJSON(String urlStr) throws SQLException { //return map of full JSON contents?
+        String response = null;
+        try {
+            URL url = new URL(urlStr);
+            HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+            urlc.setConnectTimeout(5000);
+            response = urlc.getResponseMessage();
+            BufferedReader br = new BufferedReader(new InputStreamReader(urlc.getInputStream()));
+            String l = null; //set string to null so can become br.readLine
+
+            //Build string from buffered reader response from connection:
+            StringBuilder sb = new StringBuilder();
+            while ((l = br.readLine()) != null) {
+                sb.append(l);
+                System.out.println("JSON string: " + l);
+            }
+            // ----------------------------------------------------------
+
+            //Build fullResults Map of object mapper from full string and typeReference
+            String full = sb.toString();
+            Map<String,Object> fullResults =
+                    new ObjectMapper().readValue(full, new TypeReference<Map<String,Object>>(){});
+
+
+            //build arrayList of full list of results returned in JSON:
+            JSONObject jsnOb = new JSONObject(full);
+            org.json.JSONArray jarray = jsnOb.getJSONArray("results");
+
+            List<Object> resultList = new ArrayList<Object>();
+            if (jarray !=null){
+                for(int i=0;i<jarray.length();i++){
+                    resultList.add(jarray.get(i));
+                }
+            }
+
+            for (int i=0;i<resultList.size();i++){
+                //show full result set--can be further split
+                //Split into map, retrieve movie ID to be searched and saved?
+                System.out.println(resultList.get(i));
+            }
+
+
+
+            String JSONsub = sb.substring(21);
+            Map<String,Object> result = //Object needs to be replaced by relevant class
+                    new ObjectMapper().readValue(JSONsub, new TypeReference<Map<String, Object>>() {
+                    });
+            for (Map.Entry<String,Object> entry : fullResults.entrySet()){
+                //System.out.println("1st entry set: " + entry1.getKey() + "/" + entry1.getValue());
+                // for (Map.Entry<String,Object> entry : result.entrySet()) {
+                    System.out.println(entry.getKey() + "/" + entry.getValue());
+               // }
+            }
+            System.out.println("Title: " + result.get("title"));
+            System.out.println("Overview: " + result.get("overview"));
+            // when specific film found...save movie id to sql table? can then be requested later to retrieve
+            // ...when opening own account up again.
+
+            br.close();
+
+            //PrintWriter writes json string to a file named "JSONExample.json" stored under this project
+//            PrintWriter pw = new PrintWriter("JSONExample.json");
+//            pw.write(jo.toJSONString());
+//
+//            pw.flush();
+//            pw.close();
+
+        } catch (Exception e) {
+            SQLConn err = new SQLConn();
+            err.errLog("user",e.toString(),response);
+        }
+    }
+
+    public String conParams(String mName){
+        //return http string for URL set up
+        String urlBase = "https://api.themoviedb.org/3/search/movie?api_key=7d36ba51a1f8556d39d8af08af87b75d&language=en-US&query=";
+        String movie = mName;
+        movie = movie.replace(" ","-");
+        movie = movie.toLowerCase();
+        String inf = "&page=1&include_adult=false";
+        urlBase += movie += inf;
+        return urlBase;
+    }
+}
