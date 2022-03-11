@@ -8,42 +8,41 @@ public class SQLConn {
     private String password;
     private String createdTime;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(String createdTime) {
-        this.createdTime = createdTime;
-    }
-
     String connectionUrl = "jdbc:mysql://localhost:3306/movieDB";
     Connection conn = DriverManager.getConnection(connectionUrl,"juser","movieUserPW123");
+
+    public SQLConn() throws SQLException {
+    }
+
+    public void errLog (String user, String error, String respCode) throws SQLException{
+        if(testConn()){
+            String solution = null;
+            String insErr = "INSERT INTO moviedb.err_Log (user_name, excpt, err_solution) " +
+                    "VALUES (?, ?, ?)";
+            switch (error.toString()){
+                case "SQLException":
+                    solution = "Check SQL connection";
+                    break;
+                case "IOException":
+                    solution = "Check streams";
+                    break;
+                case "FileNotFoundException":
+                    solution = "Check file paths";
+                    break;
+            }
+            //if ((respCode.charAt(1)==4) || (respCode.charAt(1)==5)){
+            //    solution = "Check API online and connected";
+            //}
+            PreparedStatement ps = conn.prepareStatement(insErr);
+            ps.setString(1,user);
+            ps.setString(2,error);
+            ps.setString(3,solution);
+            ps.executeUpdate();
+            ps.close();
+        }
+    }
     
-    public boolean testConn(String user){
+    public boolean testConn(){
         boolean testOK = false;
         try {
             String usr = "TESTUSER";
@@ -81,7 +80,7 @@ public class SQLConn {
                 ps.close();
             }
         } catch (Exception e){
-            System.out.println("Connection exception occurred: "+ e);
+            System.out.println("Connection exception occurred , check MySQL connection"+ e);
         }
         if (pword.equals(password)){
             return true;
@@ -110,7 +109,4 @@ public class SQLConn {
         }
         return ok;
     }
-    public SQLConn() throws SQLException {
-    }
-
 }
