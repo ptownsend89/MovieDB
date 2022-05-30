@@ -30,15 +30,13 @@ public class SQLConn {
                     solution = "Check file paths";
                     break;
             }
-            //if ((respCode.charAt(1)==4) || (respCode.charAt(1)==5)){
-            //    solution = "Check API online and connected";
-            //}
             PreparedStatement ps = conn.prepareStatement(insErr);
             ps.setString(1,user);
             ps.setString(2,error);
             ps.setString(3,solution);
             ps.executeUpdate();
             ps.close();
+            System.out.println("Exception occurred, check error log");
         }
     }
     
@@ -89,9 +87,16 @@ public class SQLConn {
         }
     }
 
-    public boolean createUser(String username, String pword) {
+    public boolean createUser(String username, String pword) throws SQLException {
+        //Connect to API, create user credentials, store these in SQL table
+        //Encrypt password?
+        //Retrieve user credential from table before attempting to log in again to API using key
         boolean ok = false;
         try {
+            if (testConn()){
+                ConnMDB usrConn = new ConnMDB();
+                //String createUsr = usrConn.authKey();
+            }
             String insertUser = "INSERT INTO movieDB.users (username,pword) " +
                     "VALUES (?,?)";
             PreparedStatement ps = conn.prepareStatement(insertUser);
@@ -105,8 +110,19 @@ public class SQLConn {
             }
             ps.close();
         } catch (Exception e) {
-            System.out.println("Insert error - exception: "+e);
+            System.out.println("Insert error - exception: "+e+". Cannot log error to SQL.");
         }
         return ok;
+    }
+
+    public void authKeyWrite(String user,String expiresAt,String requestToken) throws SQLException{
+        String authStr = "INSERT INTO moviedb.userAuth (username, expires_at, request_token) " +
+                "VALUES (?, STR_TO_DATE(?,'%Y-%m-%d %H:%i:%s UTC'), ?)";
+        PreparedStatement ps = conn.prepareStatement(authStr);
+        ps.setString(1,user);
+        ps.setString(2,expiresAt);
+        ps.setString(3,requestToken);
+        ps.executeUpdate();
+        ps.close();
     }
 }
