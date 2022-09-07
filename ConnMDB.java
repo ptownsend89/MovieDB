@@ -29,7 +29,6 @@ public class ConnMDB {
             HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
             urlc.setDoOutput(true);
             urlc.setAllowUserInteraction(false);
-            //NOT CONNECTING TO API -- won't return response code if initial connection doesn't take place
             urlc.connect();
             respCode = valueOf(urlc.getResponseCode());
             if (respCode.equals("200")) {

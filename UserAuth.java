@@ -35,7 +35,7 @@ public class UserAuth {
             //send for auth key:
             HttpURLConnection urlCon = (HttpURLConnection) url.openConnection();
             urlCon.setConnectTimeout(5000);
-            urlCon.setDoOutput(true);
+            urlCon.setDoOutput(false);
             //read auth key:
             BufferedReader br = new BufferedReader(new InputStreamReader(urlCon.getInputStream()));
             StringBuilder str = new StringBuilder();
@@ -65,7 +65,7 @@ public class UserAuth {
         return k;
     }
 
-    public boolean logIn (String rqToken) throws SQLException{ // will need authkey parameter
+    public boolean logIn (String rqToken) throws SQLException{ // needs authkey parameter
         boolean built = false;
 
         System.out.println("Enter Username:");
