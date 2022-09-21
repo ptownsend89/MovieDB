@@ -45,6 +45,10 @@ public class ConnMDB {
     }
 
     public List<Object> parseJSON(String urlStr) throws SQLException {
+        //Retrieves full list of search results matching selection
+        //Offers user selection of result to save to watch list
+        //Selection chosen in main()
+
         String response = null;
         List<Object> resultList = new ArrayList<>();
         try {
@@ -84,13 +88,6 @@ public class ConnMDB {
             }
             br.close();
 
-            //Select a film to save:
-            System.out.println("Select a film to save:");
-            int selection = sc.nextInt();
-            JSONObject filmChoice = new JSONObject(resultList.get(selection -1).toString());
-            System.out.println("SELECTED: " +filmChoice.getString("overview"));
-            String choiceID = filmChoice.get("id").toString(); //save ID
-
         } catch (Exception e) {
             SQLConn err = new SQLConn();
             err.errLog("user",e.toString(),response);
@@ -100,7 +97,7 @@ public class ConnMDB {
 
     public void saveWatchlist(String sessionID, String filmID) throws SQLException{
         //ID string is movie ID user wants to save
-        filmID = "335984";
+        //filmID = "335984";
         try{
             //Retrieve account ID from session ID
             String retrieveAccount = "https://api.themoviedb.org/3/account?api_key=" + apiKey + "&session_id=" + sessionID;

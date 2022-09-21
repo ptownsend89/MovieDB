@@ -5,6 +5,8 @@ import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.company.ConnMDB.testConn;
 
@@ -31,12 +33,27 @@ public class Main {
 //                System.out.println("Connection to database failed.");
 //            }
 //        } catch (Exception e){
-//            e.printStackTrace(); //print stack trace is method from Exception class
+//            e.printStackTrace();
 //        }
+        UserAuth auth = new UserAuth("TESTUSER"); //change param if needed
+        String authK = auth.authKey("TESTUSER");
+        //boolean done = auth.logIn(authK); //logs in and returns bool if successful. Needs to return session ID instead...
+        String sessionID = auth.logIn(authK);
+
         ConnMDB con = new ConnMDB();
             testConn();
             System.out.println("Enter search movie: ");
-            con.parseJSON(con.conParams(sc.nextLine()));
+            List<String> watchList = new ArrayList<>();
+            watchlist = con.parseJSON(con.conParams(sc.nextLine()));
+            
+            //Select a film to save:
+            System.out.println("Select a film to save:");
+            int selection = sc.nextInt();
+            JSONObject filmChoice = new JSONObject(resultList.get(selection -1).toString());
+            System.out.println("SELECTED: " +filmChoice.getString("overview"));
+            String choiceID = filmChoice.get("id").toString(); //save ID
+
+            con.saveWatchlist(choiceID);
     }
 
 }
