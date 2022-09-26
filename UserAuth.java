@@ -65,8 +65,8 @@ public class UserAuth {
         return k;
     }
 
-    public boolean logIn (String rqToken) throws SQLException{ // needs authkey parameter
-        boolean built = false;
+    public String logIn (String rqToken) throws SQLException{ // needs authkey parameter
+        String finalSessionID;
 
         System.out.println("Enter Username:");
         String user = sc.nextLine();
@@ -84,10 +84,9 @@ public class UserAuth {
             String loginJSON = "{\"username\": \""+user+"\",\"password\": \""+pwd+"\",\"request_token\": "
                     + "\"" + rqToken + "\"}";
 
-            System.out.println(loginJSON);
             URL url = new URL(authenticate);
             HttpsURLConnection urlc = (HttpsURLConnection) url.openConnection();
-            urlc.setRequestProperty("Content-Type","application/json; utf-8"); //set request header for post
+            urlc.setRequestProperty("Content-Type","application/json; utf-8");
             urlc.setRequestMethod("POST");
             urlc.setRequestProperty("Accept", "application/json");
             urlc.setDoOutput(true);
@@ -108,7 +107,6 @@ public class UserAuth {
                 JSONObject jObject = new JSONObject(response.toString());
                 if (jObject.get("success").toString().equals("true")){
                     System.out.println("User logged in");
-                    built = true;
                 }
             }
             urlc.disconnect();
@@ -140,6 +138,7 @@ public class UserAuth {
                 String responseLine;
                 while ((responseLine = readResponse.readLine()) != null) {
                     response.append(responseLine.trim());
+                    finalSessionID = response;
                 }
                 System.out.println("Session_ID request response: "+response);
             }
@@ -149,7 +148,10 @@ public class UserAuth {
             //errConn.errLog("user",e.toString(),"404");
             e.printStackTrace();
         }
-        return built;
+        if (finalSessionID = ""){
+            finalSessionID = "UNKNOWN";
+        }
+        return finalSessionID;
     }
 }
 

@@ -103,8 +103,6 @@ public class ConnMDB {
             String retrieveAccount = "https://api.themoviedb.org/3/account?api_key=" + apiKey + "&session_id=" + sessionID;
             URL url = new URL(retrieveAccount);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-            //First get account ID:
-            //needs api key and account session_id as param
 
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String in;
@@ -166,9 +164,8 @@ public class ConnMDB {
     public String conParams(String mName){
         //return http string for URL movie search set up
         String urlBase = "https://api.themoviedb.org/3/search/movie?api_key=" + apiKey + "&language=en-US&query=";
-        String movie = mName;
-        movie = movie.replace(" ","-");
-        movie = movie.toLowerCase();
+        mName = mName.replace(" ","-");
+        mName = mName.toLowerCase();
         String inf = "&page=1&include_adult=false";
         urlBase += movie += inf;
         return urlBase;
