@@ -1,41 +1,44 @@
 package com.company;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import org.json.JSONObject;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static com.company.ConnMDB.testConn;
 
 public class Main {
 
     static Scanner sc = new Scanner(System.in);
+    static String apiKey = "";
 
     public static void main(String[] args) throws SQLException {
 
-        UserAuth auth = new UserAuth("TESTUSER"); //change param if needed
-        String authK = auth.authKey("TESTUSER");
-
+        System.out.println("Enter Username:");
+        String user = sc.nextLine();
+        System.out.println("Enter Password");
+        String pass = sc.nextLine();
         //logs in and returns session ID if successful:
-        String sessionID = auth.logIn(authK); 
+        UserAuth auth = new UserAuth(user,pass,); //change param if needed
+        String authK = auth.authKey(user);
+        String sessionID = auth.logIn(authK); // sort! auth calls order
+
+
+
 
         //logIn will return "UNKNOWN" string if session ID not found:
-        if (sessionID != "UNKNOWN" && sessionID != ""){
+        if (!Objects.equals(sessionID, "UNKNOWN") && !Objects.equals(sessionID, "")){
             ConnMDB con = new ConnMDB();
             testConn();
             System.out.println("Enter search movie: ");
-            List<String> watchList = new ArrayList<>();
-            watchlist = con.parseJSON(con.conParams(sc.nextLine()));
+            ArrayList<String> watchList = new ArrayList<>();
+            watchList = con.parseJSON(con.conParams(sc.nextLine()));
 
             //Select a film to save:
             System.out.println("Select a film to save:");
             int listChoice = sc.nextInt();
 
             //create json object from selected film option
-            JSONObject filmChoice = new JSONObject(resultList.get(listChoice -1).toString());
+            JSONObject filmChoice = new JSONObject(watchList.get(listChoice -1));
             System.out.println("SELECTED: " +filmChoice.getString("overview"));
 
             //get film ID from json object key and call saveWatchList to post
