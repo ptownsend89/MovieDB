@@ -16,9 +16,11 @@ import static com.company.Main.sc;
 
 public class UserAuth {
     String user;
+    String pass;
 
     public UserAuth(String user) {
         this.user = user;
+        this.pass = pass;
     }
     public UserAuth (){
     }
@@ -65,13 +67,9 @@ public class UserAuth {
         return k;
     }
 
-    public String logIn (String rqToken) throws SQLException{ // needs authkey parameter
-        String finalSessionID;
+    public String logIn (String user, String pass, String rqToken) throws SQLException{ // needs authkey parameter
+        String finalSessionID = "";
 
-        System.out.println("Enter Username:");
-        String user = sc.nextLine();
-        System.out.println("Enter Password:");
-        String pwd = sc.nextLine();
         //build json with format:
         //"username:"
         //"password:"
@@ -81,7 +79,7 @@ public class UserAuth {
 
         try{
             System.out.println("Auth key "+rqToken+" passed, login initiated...");
-            String loginJSON = "{\"username\": \""+user+"\",\"password\": \""+pwd+"\",\"request_token\": "
+            String loginJSON = "{\"username\": \""+this.user+"\",\"password\": \""+this.pass+"\",\"request_token\": "
                     + "\"" + rqToken + "\"}";
 
             URL url = new URL(authenticate);
@@ -138,7 +136,9 @@ public class UserAuth {
                 String responseLine;
                 while ((responseLine = readResponse.readLine()) != null) {
                     response.append(responseLine.trim());
-                    finalSessionID = response;
+                    finalSessionID = response.toString();
+                    JSONObject jobj = new JSONObject(finalSessionID);
+                    finalSessionID = jobj.getString("session_id");
                 }
                 System.out.println("Session_ID request response: "+response);
             }
@@ -148,12 +148,9 @@ public class UserAuth {
             //errConn.errLog("user",e.toString(),"404");
             e.printStackTrace();
         }
-        if (finalSessionID = ""){
+        if (finalSessionID.equals("")){
             finalSessionID = "UNKNOWN";
         }
         return finalSessionID;
     }
 }
-
-
-// session ID - constant when authorised or changes? ---> da3d05eaa48bf2792989701e441b1b4f9b20722e
