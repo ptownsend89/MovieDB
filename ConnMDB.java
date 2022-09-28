@@ -1,4 +1,5 @@
 package com.company;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -32,7 +33,7 @@ public class ConnMDB {
             urlc.connect();
             respCode = valueOf(urlc.getResponseCode());
             if (respCode.equals("200")) {
-                System.out.println("Connected to API");
+                System.out.println("Connected to MDB");
                 connected = true;
             }
             urlc.disconnect();
@@ -44,13 +45,13 @@ public class ConnMDB {
         return connected;
     }
 
-    public List<Object> parseJSON(String urlStr) throws SQLException {
+    public ArrayList<String> parseJSON(String urlStr) throws SQLException {
         //Retrieves full list of search results matching selection
         //Offers user selection of result to save to watch list
         //Selection chosen in main()
 
         String response = null;
-        List<Object> resultList = new ArrayList<>();
+        ArrayList<String> resultList = new ArrayList<>();
         try {
             URL url = new URL(urlStr);
             HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
@@ -61,16 +62,16 @@ public class ConnMDB {
             StringBuilder sb = new StringBuilder();
             while ((l = br.readLine()) != null) {
                 sb.append(l);
-                System.out.println("Full JSON string: " + l);
+                //System.out.println("Full JSON string: " + l);
             }
             String full = sb.toString();
 
             //build arrayList of full list of results returned in JSON:
             JSONObject jsnOb = new JSONObject(full);
-            org.json.JSONArray jarray = jsnOb.getJSONArray("results");
+            JSONArray jarray = jsnOb.getJSONArray("results");
             if (jarray !=null){
                 for(int i=0;i<jarray.length();i++){
-                    resultList.add(jarray.get(i));
+                    resultList.add(jarray.get(i).toString());
                 }
             } else {
                 System.out.println("No results returned");
@@ -103,8 +104,6 @@ public class ConnMDB {
             String retrieveAccount = "https://api.themoviedb.org/3/account?api_key=" + apiKey + "&session_id=" + sessionID;
             URL url = new URL(retrieveAccount);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-            //First get account ID:
-            //needs api key and account session_id as param
 
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String in;
@@ -116,7 +115,7 @@ public class ConnMDB {
             JSONObject accountInfo = new JSONObject(account);
             String accountID = accountInfo.get("id").toString();
             String accountName = accountInfo.getString("username");
-            System.out.println("Account ID for "+accountName+ " is "+accountID);
+            //System.out.println("Account ID for "+accountName+ " is "+accountID);
             conn.disconnect();
 
             //POST ID to account start:
@@ -145,14 +144,13 @@ public class ConnMDB {
                 while ((r = bReader.readLine()) != null){
                     response.append(r.trim());
                 }
-                System.out.println("Save ID response: " + response);
             } catch (Exception e){
                 e.printStackTrace();
                 System.out.println("Error setting up input stream");
             }
 
-            JSONObject saveResponse = new JSONObject(response);
-            if (saveResponse.getString("success") == "true"){
+            JSONObject saveResponse = new JSONObject(response.toString());
+            if (saveResponse.get("success").toString().equals("true")){
                 System.out.println("Success saving film");
             }
 
@@ -166,11 +164,10 @@ public class ConnMDB {
     public String conParams(String mName){
         //return http string for URL movie search set up
         String urlBase = "https://api.themoviedb.org/3/search/movie?api_key=" + apiKey + "&language=en-US&query=";
-        String movie = mName;
-        movie = movie.replace(" ","-");
-        movie = movie.toLowerCase();
+        mName = mName.replace(" ","-");
+        mName = mName.toLowerCase();
         String inf = "&page=1&include_adult=false";
-        urlBase += movie += inf;
+        urlBase += mName += inf;
         return urlBase;
     }
 }

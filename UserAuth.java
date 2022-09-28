@@ -16,9 +16,11 @@ import static com.company.Main.sc;
 
 public class UserAuth {
     String user;
+    String pass;
 
     public UserAuth(String user) {
         this.user = user;
+        this.pass = pass;
     }
     public UserAuth (){
     }
@@ -65,13 +67,9 @@ public class UserAuth {
         return k;
     }
 
-    public boolean logIn (String rqToken) throws SQLException{ // needs authkey parameter
-        boolean built = false;
+    public String logIn (String user, String pass, String rqToken) throws SQLException{ // needs authkey parameter
+        String finalSessionID = "";
 
-        System.out.println("Enter Username:");
-        String user = sc.nextLine();
-        System.out.println("Enter Password:");
-        String pwd = sc.nextLine();
         //build json with format:
         //"username:"
         //"password:"
@@ -81,13 +79,12 @@ public class UserAuth {
 
         try{
             System.out.println("Auth key "+rqToken+" passed, login initiated...");
-            String loginJSON = "{\"username\": \""+user+"\",\"password\": \""+pwd+"\",\"request_token\": "
+            String loginJSON = "{\"username\": \""+this.user+"\",\"password\": \""+this.pass+"\",\"request_token\": "
                     + "\"" + rqToken + "\"}";
 
-            System.out.println(loginJSON);
             URL url = new URL(authenticate);
             HttpsURLConnection urlc = (HttpsURLConnection) url.openConnection();
-            urlc.setRequestProperty("Content-Type","application/json; utf-8"); //set request header for post
+            urlc.setRequestProperty("Content-Type","application/json; utf-8");
             urlc.setRequestMethod("POST");
             urlc.setRequestProperty("Accept", "application/json");
             urlc.setDoOutput(true);
@@ -108,7 +105,6 @@ public class UserAuth {
                 JSONObject jObject = new JSONObject(response.toString());
                 if (jObject.get("success").toString().equals("true")){
                     System.out.println("User logged in");
-                    built = true;
                 }
             }
             urlc.disconnect();
@@ -140,6 +136,9 @@ public class UserAuth {
                 String responseLine;
                 while ((responseLine = readResponse.readLine()) != null) {
                     response.append(responseLine.trim());
+                    finalSessionID = response.toString();
+                    JSONObject jobj = new JSONObject(finalSessionID);
+                    finalSessionID = jobj.getString("session_id");
                 }
                 System.out.println("Session_ID request response: "+response);
             }
@@ -149,9 +148,9 @@ public class UserAuth {
             //errConn.errLog("user",e.toString(),"404");
             e.printStackTrace();
         }
-        return built;
+        if (finalSessionID.equals("")){
+            finalSessionID = "UNKNOWN";
+        }
+        return finalSessionID;
     }
 }
-
-
-// session ID - constant when authorised or changes? ---> da3d05eaa48bf2792989701e441b1b4f9b20722e
