@@ -13,16 +13,25 @@ public class Main {
 
     public static void main(String[] args) throws SQLException {
 
-        System.out.println("Enter Username:");
-        String user = sc.nextLine();
-        System.out.println("Enter Password");
-        String pass = sc.nextLine();
-        //logs in and returns session ID if successful:
-        UserAuth auth = new UserAuth(user,pass,); //change param if needed
-        String authK = auth.authKey(user);
-        String sessionID = auth.logIn(authK); // sort! auth calls order
+        System.out.println("Welcome to Movie DB!");
 
-
+        String sessionID = "";
+        while (sessionID.equals("") || (sessionID.equals("UNKNOWN"))) {
+            System.out.println("Enter Username:");
+            String user = sc.nextLine();
+            System.out.println("Enter Password");
+            String pass = sc.nextLine();
+            //log in and return session ID if successful:
+            UserAuth auth = new UserAuth(user, pass);
+            try {
+                String authK = auth.authKey();
+                sessionID = auth.logIn(user, pass, authK);
+            } catch (Exception e) {
+                SQLConn errLog = new SQLConn();
+                errLog.errLog(user,e.toString(),"Login failure");
+                System.out.println("Incorrect login details, try again.");
+            }
+        }
 
 
         //logIn will return "UNKNOWN" string if session ID not found:
@@ -42,7 +51,7 @@ public class Main {
             System.out.println("SELECTED: " +filmChoice.getString("overview"));
 
             //get film ID from json object key and call saveWatchList to post
-            String choiceID = filmChoice.get("id").toString(); //save ID
+            String choiceID = filmChoice.get("id").toString();
             con.saveWatchlist(sessionID,choiceID);
         }
     }
