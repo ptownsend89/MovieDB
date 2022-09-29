@@ -6,19 +6,14 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.company.Main.apiKey;
-import static com.company.Main.sc;
 import static java.lang.String.valueOf;
 
 public class ConnMDB {
-    private URL url; //needed to be passed or create in constructor?
-    private String pwd;
 
     public ConnMDB (){
     }
@@ -47,8 +42,6 @@ public class ConnMDB {
 
     public ArrayList<String> parseJSON(String urlStr) throws SQLException {
         //Retrieves full list of search results matching selection
-        //Offers user selection of result to save to watch list
-        //Selection chosen in main()
 
         String response = null;
         ArrayList<String> resultList = new ArrayList<>();
@@ -74,7 +67,7 @@ public class ConnMDB {
                     resultList.add(jarray.get(i).toString());
                 }
             } else {
-                System.out.println("No results returned");
+                System.out.println("No results found");
             }
 
             for (int i=0;i<resultList.size();i++){
