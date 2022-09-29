@@ -36,7 +36,9 @@ public class SQLConn {
             ps.setString(3,solution);
             ps.executeUpdate();
             ps.close();
-            System.out.println("Exception occurred, check error log");
+            if (!respCode.equals("Login failure")) {
+                System.out.println("Exception occurred, check error log");
+            }
         }
     }
     
