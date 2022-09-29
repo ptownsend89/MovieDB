@@ -1,7 +1,6 @@
 package com.company;
 
 import org.json.JSONObject;
-
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -18,51 +17,47 @@ public class UserAuth {
     String user;
     String pass;
 
-    public UserAuth(String user) {
+    public UserAuth(String user, String pass) {
         this.user = user;
         this.pass = pass;
     }
-    public UserAuth (){
-    }
 
-    public String authKey(String user) throws SQLException {
+    public String authKey() throws SQLException {
         //returns JSON string containing auth key for user to authenticate first time login
-        //implement USER passing
         String auth;
         String k = null;
         try {
 
             String authKey = "https://api.themoviedb.org/3/authentication/token/new?api_key=" + apiKey;
             URL url = new URL(authKey);
-            //send for auth key:
+
             HttpURLConnection urlCon = (HttpURLConnection) url.openConnection();
             urlCon.setConnectTimeout(5000);
             urlCon.setDoOutput(false);
-            //read auth key:
+
             BufferedReader br = new BufferedReader(new InputStreamReader(urlCon.getInputStream()));
             StringBuilder str = new StringBuilder();
             while ((auth=br.readLine()) != null){
                 str.append(auth);
             }
-            System.out.println(str);
 
             String js = str.toString();
             JSONObject key = new JSONObject(js);
             k = key.getString("request_token");
-            String exp = key.getString("expires_at");
+            String expiry = key.getString("expires_at");
 
             //write to authKey record table:
             SQLConn authWrite = new SQLConn();
-            authWrite.authKeyWrite(user,exp,k);
+            authWrite.authKeyWrite(this.user,expiry,k);
 
-            System.out.println("Auth key generated...");
+            //add check to db to see if already authenticated or not
             System.out.println("Now go to: https://www.themoviedb.org/authenticate/"+k+" to log in");
             System.out.println("Press any key to continue:");
             sc.nextLine();
 
         }catch(Exception e){
             SQLConn errConn = new SQLConn();
-            errConn.errLog("user",e.toString(),"404");
+            errConn.errLog(this.user,e.toString(),"404");
         }
         return k;
     }
@@ -78,7 +73,6 @@ public class UserAuth {
         String authenticate = "https://api.themoviedb.org/3/authentication/token/validate_with_login?api_key=" + apiKey;
 
         try{
-            System.out.println("Auth key "+rqToken+" passed, login initiated...");
             String loginJSON = "{\"username\": \""+this.user+"\",\"password\": \""+this.pass+"\",\"request_token\": "
                     + "\"" + rqToken + "\"}";
 
@@ -118,7 +112,6 @@ public class UserAuth {
             sessionURL.setDoOutput(true);
             sessionURL.setRequestProperty("Content-Type","application/json; utf-8");
             sessionURL.setRequestProperty("Accept", "application/json");
-            //write body to url:
 
             try(OutputStream os = sessionURL.getOutputStream()) {
                 byte[] input = body.getBytes(StandardCharsets.UTF_8);
@@ -128,7 +121,6 @@ public class UserAuth {
                 e.printStackTrace();
                 System.out.println("Request body write failed, check body");
             }
-
             //read response:
             InputStreamReader sessionRead = new InputStreamReader(sessionURL.getInputStream());
             try(BufferedReader readResponse = new BufferedReader(sessionRead)) {
@@ -140,12 +132,10 @@ public class UserAuth {
                     JSONObject jobj = new JSONObject(finalSessionID);
                     finalSessionID = jobj.getString("session_id");
                 }
-                System.out.println("Session_ID request response: "+response);
             }
 
         } catch(Exception e){
             SQLConn errConn = new SQLConn();
-            //errConn.errLog("user",e.toString(),"404");
             e.printStackTrace();
         }
         if (finalSessionID.equals("")){
