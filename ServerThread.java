@@ -13,7 +13,7 @@ import static com.company.SQLConn.initialiseSQL;
 public class ServerThread extends Thread{
 
     static Scanner sc = new Scanner(System.in);
-    static String apiKey = "7d36ba51a1f8556d39d8af08af87b75d";
+    static String apiKey = "";
     private final Socket socket;
 
     public ServerThread(Socket socket) {
